@@ -8,6 +8,8 @@ chrono = "0.4"
 color-eyre = "0.6"
 egg-mode = { version = "0.15", features = ["rustls"], default-features = false }
 futures = "0.3"
+lazy_static = "1.4"
+regex = "1"
 reqwest = "0.11"
 serde = "1"
 soup = "0.5"

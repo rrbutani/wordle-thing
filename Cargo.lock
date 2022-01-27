@@ -2059,6 +2059,8 @@ dependencies = [
  "color-eyre",
  "egg-mode",
  "futures",
+ "lazy_static",
+ "regex",
  "reqwest",
  "serde",
  "soup",
