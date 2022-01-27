@@ -31,6 +31,7 @@ struct Args {
     /// If not specified this is grabbed from `$TWITTER_CONSUMER_SECRET`.
     #[structopt(long, env = "TWITTER_CONSUMER_SECRET")]
     consumer_secret: String,
+    // / Days to exclude.
 }
 
 const URL: &str = "https://www.powerlanguage.co.uk/wordle/";
@@ -348,19 +349,33 @@ async fn main() -> Result<()> {
             continue;
         };
 
-        let author_date = t.created_at.unwrap();
-        let day: usize = author_date
-            .signed_duration_since(day_one)
-            .num_days()
-            .try_into()
-            .unwrap();
-        let word = &WORDLE_DATA.answers[day];
+        // If the tweet starts with "Wordle <day number>" we'll use that day number.
+        let day: usize = if let Some(day) = text
+            .lines()
+            .next()
+            .and_then(|l| l.strip_prefix("Wordle "))
+            .and_then(|l| l.split_whitespace().next())
+            .and_then(|l| l.trim().parse().ok())
+        {
+            day
+        } else {
+            // Otherwise we'll guess from the tweet date.
+            let author_date = t.created_at.unwrap();
+            author_date
+                .signed_duration_since(day_one)
+                .num_days()
+                .try_into()
+                .unwrap()
+        };
+
+        let word = &*WORDLE_DATA.answers[day];
         println!("[{day:3}] {} ({word})", first_guess.display());
 
-        guesses.push((first_guess, &**word));
+        guesses.push((first_guess, word));
     }
 
     if let Some(potential_answers) = solve(&*guesses) {
+        println!();
         if potential_answers.len() == 1 {
             println!("Is your first guess.. {}?", potential_answers[0].bold());
         } else if potential_answers.len() <= 12 {
