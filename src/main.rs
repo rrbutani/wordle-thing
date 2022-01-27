@@ -31,7 +31,10 @@ struct Args {
     /// If not specified this is grabbed from `$TWITTER_CONSUMER_SECRET`.
     #[structopt(long, env = "TWITTER_CONSUMER_SECRET")]
     consumer_secret: String,
-    // / Days to exclude.
+
+    /// Days to exclude.
+    #[structopt(short, long, default_value = "0")]
+    excludes: Vec<usize>,
 }
 
 const URL: &str = "https://www.powerlanguage.co.uk/wordle/";
@@ -278,6 +281,7 @@ fn solve(guesses: &[(Guess, &str)]) -> Option<Vec<&'static str>> {
 async fn main() -> Result<()> {
     color_eyre::install()?;
     let args = Args::from_args();
+    let excludes = args.excludes.iter().collect::<HashSet<_>>();
 
     let token = KeyPair::new(args.consumer_key, args.consumer_secret);
     let token = auth::bearer_token(&token)
@@ -367,6 +371,9 @@ async fn main() -> Result<()> {
                 .try_into()
                 .unwrap()
         };
+        if excludes.contains(&day) {
+            continue;
+        }
 
         let word = &*WORDLE_DATA.answers[day];
         println!("[{day:3}] {} ({word})", first_guess.display());
@@ -379,7 +386,7 @@ async fn main() -> Result<()> {
         if potential_answers.len() == 1 {
             println!("Is your first guess.. {}?", potential_answers[0].bold());
         } else if potential_answers.len() <= 12 {
-            println!("Couldn't exactly figure out your preferred first guess but we have some guesses: [{:#?}]", potential_answers);
+            println!("Couldn't exactly figure out your preferred first guess but we have some guesses: {:#?}", potential_answers);
         } else {
             println!(
                 "Couldn't figure it out! (we found {} possibilities, too many)",
