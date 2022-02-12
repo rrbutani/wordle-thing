@@ -37,7 +37,7 @@ struct Args {
     excludes: Vec<usize>,
 }
 
-const URL: &str = "https://www.powerlanguage.co.uk/wordle/";
+const URL: &str = "https://www.nytimes.com/games/wordle/";
 const START_DATE: &str = "2021-06-19T00:00:00Z";
 
 async fn get_valid_words_and_answers() -> (Vec<String>, Vec<String>) {
